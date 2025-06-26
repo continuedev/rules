@@ -104,7 +104,9 @@ func isAlwaysApply(content []byte) bool {
 		}
 	}
 
-	return false
+	// If alwaysApply is not explicitly set, default to true
+	// This ensures rules without the alwaysApply field are included in single-file formats
+	return true
 }
 
 // hasFrontmatter checks if a file has frontmatter
