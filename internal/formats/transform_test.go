@@ -284,6 +284,101 @@ Test content.`
 	}
 }
 
+func TestIsAlwaysApply(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected bool
+	}{
+		{
+			name: "No frontmatter should return true",
+			content: `# Test Rule
+
+This is a test rule without frontmatter.`,
+			expected: true,
+		},
+		{
+			name: "Frontmatter with alwaysApply: true should return true",
+			content: `---
+alwaysApply: true
+description: "Test rule"
+---
+
+# Test Rule
+
+Test content.`,
+			expected: true,
+		},
+		{
+			name: "Frontmatter with alwaysApply: false should return false",
+			content: `---
+alwaysApply: false
+description: "Test rule"
+---
+
+# Test Rule
+
+Test content.`,
+			expected: false,
+		},
+		{
+			name: "Frontmatter with alwaysApply: 'true' (string) should return true",
+			content: `---
+alwaysApply: "true"
+description: "Test rule"
+---
+
+# Test Rule
+
+Test content.`,
+			expected: true,
+		},
+		{
+			name: "Frontmatter with alwaysApply: 'false' (string) should return false",
+			content: `---
+alwaysApply: "false"
+description: "Test rule"
+---
+
+# Test Rule
+
+Test content.`,
+			expected: false,
+		},
+		{
+			name: "Frontmatter without alwaysApply field should return true (default behavior)",
+			content: `---
+name: "Next.js + Common Libraries"
+description: "Test rule"
+---
+
+# Test Rule
+
+Test content.`,
+			expected: true,
+		},
+		{
+			name: "Empty frontmatter should return true",
+			content: `---
+---
+
+# Test Rule
+
+Test content.`,
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isAlwaysApply([]byte(tt.content))
+			if result != tt.expected {
+				t.Errorf("isAlwaysApply() = %v, expected %v for content:\n%s", result, tt.expected, tt.content)
+			}
+		})
+	}
+}
+
 func TestTransformRuleContent_CursorFallback(t *testing.T) {
 	tests := []struct {
 		name           string
