@@ -30,16 +30,18 @@ func TestCLIIntegration(t *testing.T) {
 			// Get the parent directory (project root)
 			parentDir := filepath.Join("..", ".")
 
+			binaryName := testBinaryName("rules-test")
 			// Build the CLI from the parent directory
-			buildCmd := exec.Command("go", "build", "-o", "rules-test", ".")
+			buildCmd := exec.Command("go", "build", "-o", binaryName, ".")
 			buildCmd.Dir = parentDir
 			if err := buildCmd.Run(); err != nil {
 				t.Fatalf("Failed to build CLI: %v", err)
 			}
-			defer exec.Command("rm", "-f", filepath.Join(parentDir, "rules-test")).Run()
+			binaryPath := filepath.Join(parentDir, binaryName)
+			defer cleanupTestPath(t, binaryPath)
 
 			// Run the CLI command
-			cmd := exec.Command(filepath.Join(parentDir, "rules-test"), tt.args...)
+			cmd := exec.Command(binaryPath, tt.args...)
 			output, err := cmd.CombinedOutput()
 
 			// For help and version commands, exit code 0 is expected
@@ -58,14 +60,16 @@ func TestCLICommandsExist(t *testing.T) {
 	// Test that expected commands exist
 	parentDir := filepath.Join("..", ".")
 
-	buildCmd := exec.Command("go", "build", "-o", "rules-test", ".")
+	binaryName := testBinaryName("rules-test")
+	buildCmd := exec.Command("go", "build", "-o", binaryName, ".")
 	buildCmd.Dir = parentDir
 	if err := buildCmd.Run(); err != nil {
 		t.Fatalf("Failed to build CLI: %v", err)
 	}
-	defer exec.Command("rm", "-f", filepath.Join(parentDir, "rules-test")).Run()
+	binaryPath := filepath.Join(parentDir, binaryName)
+	defer cleanupTestPath(t, binaryPath)
 
-	cmd := exec.Command(filepath.Join(parentDir, "rules-test"), "--help")
+	cmd := exec.Command(binaryPath, "--help")
 	output, _ := cmd.CombinedOutput()
 
 	// Check for expected subcommands
