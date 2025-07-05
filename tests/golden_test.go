@@ -139,7 +139,7 @@ func TestGoldenFiles(t *testing.T) {
 	}
 
 	// Make sure the CLI binary exists
-	cliPath := "../rules-cli"
+	cliPath := testBinaryName("../rules-cli")
 	if _, err := os.Stat(cliPath); os.IsNotExist(err) {
 		// Build the CLI if it doesn't exist
 		// Get version from package.json
@@ -159,7 +159,8 @@ func TestGoldenFiles(t *testing.T) {
 	for _, goldenFile := range goldenFiles {
 		t.Run(goldenFile, func(t *testing.T) {
 			// Look up the command for this golden file
-			cmd, found := goldenToCommand["tests/"+goldenFile]
+			slashPath := filepath.ToSlash(goldenFile)
+			cmd, found := goldenToCommand["tests/"+slashPath]
 			if !found {
 				t.Skipf("No command configured for golden file: %s", goldenFile)
 				return
@@ -170,10 +171,10 @@ func TestGoldenFiles(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create temporary directory: %v", err)
 			}
-			defer os.RemoveAll(tempDir)
+			defer cleanupTestPath(t, tempDir)
 
 			// Copy the CLI binary to the temporary directory
-			tempCliPath := filepath.Join(tempDir, "rules-cli")
+			tempCliPath := filepath.Join(tempDir, testBinaryName("rules-cli"))
 			if err := copyFile(cliPath, tempCliPath); err != nil {
 				t.Fatalf("Failed to copy CLI binary: %v", err)
 			}
@@ -243,6 +244,7 @@ func TestGoldenFiles(t *testing.T) {
 			// Normalize line endings for cross-platform compatibility
 			expected = strings.ReplaceAll(expected, "\r\n", "\n")
 			actual = strings.ReplaceAll(actual, "\r\n", "\n")
+			actual = filepath.ToSlash(actual)
 
 			// Special case for login test which has placeholders
 			if strings.Contains(expected, "<STATE_PLACEHOLDER>") {
